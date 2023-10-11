@@ -28,6 +28,7 @@ if ($_POST) {
     if ($Mal) {
         ImprimirForm();
     }else{
+        
      echo("El registro se a realizado correctamente  </br>");   
     }
 
