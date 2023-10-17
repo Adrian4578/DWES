@@ -1,5 +1,6 @@
 <?php
 //código con instrucciones php
+error_reporting(0);
 if ($_POST) {
 
     $Mal = false;
@@ -24,47 +25,117 @@ if ($_POST) {
     if ($Mal) {
         ImprimirForm();
     } else {
+        if ($_GET['action'] == 'mod') {
+            # code...
+            $conexion = new mysqli('localhost', 'Agenda', 'agenda', 'agenda');
+            // $resultado = $conexion->query('UPDATE  agenda SET Nombre="' . $_POST["Nombre"] . ',Apellido_1="' . $_POST["Apellido1"] . ',Apellido_2="' . $_POST["Apellido1"] . ',Numero_Telf="' . $_POST["Numero"] . ' WHERE WHERE Id_contacto=' . $_GET['id']);
+            $resultado = $conexion->stmt_init();
+            $resultado->prepare('UPDATE agenda SET Nombre=?,Apellido_1=?,Apellido_2=?,Numero_Telf=? WHERE Id_contacto="' . $_GET['id'] . '"');
+            $nombre = $_POST["Nombre"];
+            $Apellido1 = $_POST["Apellido1"];
+            $Apellido2 = $_POST["Apellido2"];
+            $Numero = $_POST["Numero"];
+            $resultado->bind_param('sssi', $nombre, $Apellido1, $Apellido2, $Numero);
+            $resultado->execute();
+            $resultado->close();
+            //$resultado = $conexion->stmt_init();
+            //$resultado->prepare();
+            header("Location: ./contactoNuevo.php");
 
-        $conexion = new mysqli('localhost', 'Agenda', 'agenda', 'agenda');
-        //$resultado = $conexion->query('INSERT INTO agenda (Nombre,Apellido_1,Apellido_2,Numero_Telf) VALUES("juan","alberto","gimenez",213)');
-        $resultado = $conexion->query('INSERT INTO agenda (Nombre,Apellido_1,Apellido_2,Numero_Telf) VALUES ("' . $_POST["Nombre"] . '","' . $_POST["Apellido1"] . '","' . $_POST["Apellido2"] . '",' . $_POST["Numero"] . ')');
+        } else {
+            $conexion = new mysqli('localhost', 'Agenda', 'agenda', 'agenda');
+            //$resultado = $conexion->query('INSERT INTO agenda (Nombre,Apellido_1,Apellido_2,Numero_Telf) VALUES("juan","alberto","gimenez",213)');
+            echo ('
+            <form action="#" method="post">
+                <fieldset>
+                    <legend>Datos</legend>
+                    <label>Nombre:<input type="text" name="Nombre" required "></label>
+                    <br>
+                    <label>Apellido 1:<input type="text" name="Apellido1" required "></label>
+                    <br>
+                    <label>Apellido 2:<input type="text" name="Apellido2" required "></label>
+                     <br>
+                    <label>Numero:<input type="number" name="Numero" required "></label>
+                    <label><input type="submit"></label>
+                </fieldset>
+            </form></br>');
+            //   $resultado = $conexion->query('INSERT INTO agenda (Nombre,Apellido_1,Apellido_2,Numero_Telf) VALUES ("' . $_POST["Nombre"] . '","' . $_POST["Apellido1"] . '","' . $_POST["Apellido2"] . '",' . $_POST["Numero"] . ')');
+            $resultado = $conexion->stmt_init();
+            $resultado->prepare('INSERT INTO agenda (Nombre,Apellido_1,Apellido_2,Numero_Telf) VALUES (?,?,?,?)');
+            $nombre = $_POST["Nombre"];
+            $Apellido1 = $_POST["Apellido1"];
+            $Apellido2 = $_POST["Apellido2"];
+            $Numero = $_POST["Numero"];
+            $resultado->bind_param('sssi', $nombre, $Apellido1, $Apellido2, $Numero);
+            $resultado->execute();
+            $resultado->close();
 
-    
 
-        $resultado = $conexion->query('Select * from agenda');
-        $stock = $resultado->fetch_object();
-        while ($stock != null) {
-            echo 'Nombre ' . $stock->Nombre . ' ' . $stock->Apellido_1 . ' '. $stock->Apellido_2 . '   <a href="./borrarContacto.php?id='.$stock->Id_Contacto.'" > borrar </a>   </br> ';
-            $stock = $resultado->fetch_object();
+            lista_contacto();
         }
+
+
 
     }
 
 
 } else {
-    echo ('
-    <form action="#" method="post">
-        <fieldset>
-            <legend>Datos</legend>
-            <label>Nombre:<input type="text" name="Nombre" required "></label>
-            <br>
-            <label>Apellido 1:<input type="text" name="Apellido1" required "></label>
-            <br>
-            <label>Apellido 2:<input type="text" name="Apellido2" required "></label>
-             <br>
-            <label>Numero:<input type="number" name="Numero" required "></label>
-            <label><input type="submit"></label>
-        </fieldset>
-    </form></br>');
+    if ($_GET['action'] == 'borrar') {
+        $conexion = new mysqli('localhost', 'Agenda', 'agenda', 'agenda');
+        $resultado = $conexion->query('Select * from agenda where Id_contacto="' . $_GET['id'] . '"');
+        if ($resultado) {
+            $resultado = "";
+            $resultado = $conexion->query('DELETE FROM agenda WHERE Id_Contacto= ' . $_GET['id'] . ';');
+        }
+        header("Location: ./contactoNuevo.php");
+    } elseif ($_GET['action'] == 'mod') {
+        //     $conexion = new mysqli('localhost', 'Agenda', 'agenda', 'agenda');
+        //     $resultado = $conexion->query('Select * from agenda where Id_contacto="' . $_GET['id'] . '"');
+        //     $stock = $resultado->fetch_object();
+        $conexion = new mysqli('localhost', 'Agenda', 'agenda', 'agenda');
+        $resultado = $conexion->query('Select * from agenda where Id_contacto="' . $_GET['id'] . '"');
+        $resultado = $conexion->stmt_init();
+        $resultado->prepare('Select * from agenda');
+        $resultado->execute();
+        $resultado->bind_result($Id_Contacto, $Nombre, $Apellido_1, $Apellido_2, $Numero);
+        $resultado->fetch();
+        echo ('
+        <form action="#" method="post">
+            <fieldset>
+                <legend>Datos</legend>
+                <label>Nombre:<input type="text" name="Nombre" required value="' . $Nombre . '"></label>
+                <br>
+                <label>Apellido 1:<input type="text" name="Apellido1" required value="' . $Apellido_1 . '"></label>
+                <br>
+                <label>Apellido 2:<input type="text" name="Apellido2" required value="' . $Apellido_2 . '"></label>
+                 <br>
+                <label> Numero:<input type="number" name="Numero" required value="' . $Numero . '"></label>
+                <label><input type="submit"></label>
+            </fieldset>
+        </form></br>');
+        $resultado->close();
+    } else {
+        ImprimirFormVacio();
 
+    }
+    lista_contacto();
+
+}
+
+function lista_contacto()
+{
     $conexion = new mysqli('localhost', 'Agenda', 'agenda', 'agenda');
     $resultado = $conexion->query('Select * from agenda');
-    $stock = $resultado->fetch_object();
-    while ($stock != null) {
-        echo 'Nombre ' . $stock->Nombre . ' ' . $stock->Apellido_1 . ' '. $stock->Apellido_2 . '   <a href="./borrarContacto.php?id='.$stock->Id_Contacto.'" > borrar </a>   </br> ';
-        $stock = $resultado->fetch_object();
+    $resultado = $conexion->stmt_init();
+    $resultado->prepare('Select * from agenda');
+    $resultado->execute();
+    $resultado->bind_result($Id_Contacto, $Nombre, $Apellido_1, $Apellido_2, $Numero);
+
+    while ($resultado->fetch()) {
+        echo 'Nombre ' . $Nombre . ' ' . $Apellido_1 . ' ' . $Apellido_2 . ' num telefono:'.$Numero.'  <a href="./contactoNuevo.php?id=' . $Id_Contacto . '&action=borrar"> borrar </a>  <a href="./contactoNuevo.php?id=' . $Id_Contacto . '&action=mod" > modificar </a>  </br> ';
+
     }
-    
+    $resultado->close();
 }
 function ImprimirForm()
 {
@@ -85,18 +156,24 @@ function ImprimirForm()
         </form></br>');
 }
 
+function ImprimirFormVacio()
+{
+    echo ('
+    <form action="#" method="post">
+        <fieldset>
+            <legend>Datos</legend>
+            <label>Nombre:<input type="text" name="Nombre" required "></label>
+            <br>
+            <label>Apellido 1:<input type="text" name="Apellido1" required "></label>
+            <br>
+            <label>Apellido 2:<input type="text" name="Apellido2" required "></label>
+             <br>
+            <label>Numero:<input type="number" name="Numero" required "></label>
+            <label><input type="submit"></label>
+        </fieldset>
+    </form></br>');
+}
+
 //código con instrucciones php
 
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-<a href="./borrarContacto.php" ></a>
-</body>
-</html>
