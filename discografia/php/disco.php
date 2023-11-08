@@ -1,4 +1,7 @@
 <?php
+include("./confirmAuth.php");
+
+
 $opc = array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8');
 $conexion = new PDO('mysql:host=localhost;dbname=discografia', 'discografia', 'discografia', $opc);
 $resultado = $conexion->query('SELECT *  FROM cancion where album='. $_GET['codigoDisco'] .';');

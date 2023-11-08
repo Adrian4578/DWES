@@ -1,6 +1,11 @@
 <?php
+
+// Se comprueba si la variable ya existe
+session_start();
+
 error_reporting(E_ERROR | E_PARSE);
 if ($_POST) {
+    echo $_SESSION['usuario'];
     $opc = array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8');
     $conexion = new PDO('mysql:host=localhost;dbname=discografia', 'discografia', 'discografia', $opc);
     $resultado = $conexion->query('SELECT *  FROM tabla_usuarios where usuario="' . $_POST['usuario'] . '";');
@@ -9,9 +14,10 @@ if ($_POST) {
 
         if (password_verify($_POST['contraseña'], $registro['password'])) {
             echo "Login correcto";
-          
             setcookie('Micockie[0]', $_POST['usuario'], time() + 3600);
-            setcookie('Micockie[1]', $registro['password'], time() + 3600);
+            setcookie('Micockie[1]', $registro['password'], time() + 3600);            
+            $_SESSION['usuario']=$_POST['usuario'];
+            header('Location: ./index.php ');
 
         } else {
             echo "Login fallido";
@@ -27,16 +33,22 @@ if ($_POST) {
         echo "</form>";
 
         if ($_GET['si'] ||$_GET['no'] ) {
-            echo $_COOKIE["Micockie"][0];
+          
             if ($_GET['si']=="si") {
+                echo $_COOKIE["Micockie"][0];
                 echo"Login correcto";
+                session_start();
+                header('Location: ./index.php ');
+
             }else{
                 setcookie('Micockie[0]', "", time() - 3600);
                 setcookie('Micockie[1]', "", time() - 3600);
+                session_destroy();
                 header('Location: ./login.php ');
             }
         }
     } else {
+        session_unset();
         showForm();
     }
 
@@ -56,6 +68,8 @@ function showForm()
     echo "<br>";
     echo "<input type='submit' name='login'  class='btn btn-primary' value='login '>  
                         ";
+    echo '<button onclick=location.href="./Register.php">Registro </button>'  
+                        ;
     echo "</form>";
 }
 

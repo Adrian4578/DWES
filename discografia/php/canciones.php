@@ -1,4 +1,7 @@
 <?php
+include("./confirmAuth.php");
+
+
 $opc = array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8');
 $conexion = new PDO('mysql:host=localhost;dbname=discografia', 'discografia', 'discografia', $opc);
 if ($_POST) {
@@ -91,8 +94,22 @@ if ($_POST) {
             # code...
             break;
     }
+
+    if (isset($_COOKIE['MicockieBusqueda'])) {
+        $numL=sizeof($_COOKIE['MicockieBusqueda'])+1;
+        setcookie('MicockieBusqueda['.$numL.']','Texto '. $_POST['Texto'].' Genero '.$_POST['genero']. 'Buscado en/por '.$_POST['BuscarEn'], time() + 3600);
+
+    }
+
+
+
 } else {
     showForm();
+    if (isset($_COOKIE['MicockieBusqueda'])) {
+        foreach ($_COOKIE['MicockieBusqueda'] as $nombre => $valor) {
+           echo ''. $valor .'<br>';
+        }
+       }
 }
 function showForm()
 {
